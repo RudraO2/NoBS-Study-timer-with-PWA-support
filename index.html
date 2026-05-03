@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>KTKUDY Timer</title>
+
+<!-- PWA Meta Tags -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Timer">
+<meta name="theme-color" content="#1a1d23">
+<meta name="description" content="KTKUDY HX106 Digital Timer — Clock, Countdown, Count-up, Alarm">
+
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%231a1d23'/%3E%3Crect x='56' y='80' width='400' height='200' rx='24' fill='%23a3bca6'/%3E%3Ctext x='256' y='210' font-family='monospace' font-weight='900' font-size='120' fill='%231a2e1a' text-anchor='middle'%3E8:04%3C/text%3E%3Ccircle cx='156' cy='350' r='36' fill='%235fb3aa'/%3E%3Ccircle cx='256' cy='350' r='36' fill='%235fb3aa'/%3E%3Ccircle cx='356' cy='350' r='36' fill='%235fb3aa'/%3E%3Ccircle cx='156' cy='430' r='36' fill='%23dde1e6'/%3E%3Ccircle cx='256' cy='430' r='36' fill='%23dde1e6'/%3E%3Ccircle cx='356' cy='430' r='36' fill='%23dde1e6'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%231a1d23'/%3E%3Crect x='56' y='80' width='400' height='200' rx='24' fill='%23a3bca6'/%3E%3Ctext x='256' y='210' font-family='monospace' font-weight='900' font-size='120' fill='%231a2e1a' text-anchor='middle'%3E8:04%3C/text%3E%3Ccircle cx='156' cy='350' r='36' fill='%235fb3aa'/%3E%3Ccircle cx='256' cy='350' r='36' fill='%235fb3aa'/%3E%3Ccircle cx='356' cy='350' r='36' fill='%235fb3aa'/%3E%3Ccircle cx='156' cy='430' r='36' fill='%23dde1e6'/%3E%3Ccircle cx='256' cy='430' r='36' fill='%23dde1e6'/%3E%3Ccircle cx='356' cy='430' r='36' fill='%23dde1e6'/%3E%3C/svg%3E">
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1d23;
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+  }
+
+  /* Install banner */
+  .install-banner {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(180deg, #2d3140, #23272e);
+    padding: 14px 18px;
+    z-index: 100;
+    align-items: center;
+    gap: 12px;
+    border-top: 1px solid rgba(255,255,255,.08);
+    animation: slideUp .4s ease;
+  }
+  .install-banner.show { display: flex; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .install-banner .ib-text { flex: 1; color: #ccc; font-size: 13px; font-weight: 500; line-height: 1.3; }
+  .install-banner .ib-text strong { color: #fff; }
+  .install-banner button { padding: 8px 18px; border: none; border-radius: 20px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12px; cursor: pointer; }
+  .ib-install { background: linear-gradient(180deg, #7ecbc2, #5fb3aa); color: #fff; }
+  .ib-dismiss { background: rgba(255,255,255,.08); color: #999; }
+
+  .device-wrap { display: flex; flex-direction: column; align-items: center; }
+
+  .device {
+    width: min(92vw, 380px);
+    background: linear-gradient(145deg, #d4dce8, #bfc8d6);
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5), 0 0 0 2px rgba(255,255,255,.15), inset 0 1px 0 rgba(255,255,255,.4);
+  }
+
+  .lcd-frame { background: #2a2e35; border-radius: 14px; padding: 4px; box-shadow: inset 0 4px 12px rgba(0,0,0,.6); }
+
+  .lcd {
+    background: linear-gradient(180deg, #8fa89a, #a3bca6);
+    border-radius: 11px; padding: 14px 16px 12px;
+    position: relative; min-height: 120px;
+    display: flex; flex-direction: column; justify-content: center; overflow: hidden;
+  }
+  .lcd::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.03) 2px, rgba(0,0,0,.03) 4px); pointer-events: none; border-radius: 11px; }
+  .lcd-flash { animation: flash-alert .4s ease infinite; }
+  @keyframes flash-alert { 0%, 100% { background: linear-gradient(180deg, #8fa89a, #a3bca6); } 50% { background: linear-gradient(180deg, #cde0c8, #e0f0d8); } }
+
+  .mode-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; color: rgba(30,50,30,.25); letter-spacing: .5px; }
+  .mode-row span.active { color: rgba(20,40,20,.85); }
+  .mode-row .alarm-icon { font-size: 13px; opacity: .2; }
+  .mode-row .alarm-icon.active { opacity: .85; }
+
+  .time-display { font-family: 'Orbitron', monospace; font-weight: 900; font-size: 52px; color: #1a2e1a; text-align: center; letter-spacing: 2px; line-height: 1; text-shadow: 0 1px 0 rgba(255,255,255,.15); }
+  .time-display .seconds { font-size: 30px; vertical-align: baseline; margin-left: 2px; }
+  .time-display .colon { margin: 0 -2px; display: inline-block; }
+  .colon-hidden { visibility: hidden; }
+  .time-display .ampm { font-size: 14px; font-weight: 700; margin-left: 4px; vertical-align: super; font-family: 'Inter', sans-serif; }
+
+  .sub-row { display: flex; justify-content: center; gap: 16px; margin-top: 6px; font-size: 10px; font-weight: 700; font-family: 'Inter', sans-serif; color: rgba(30,50,30,.2); }
+  .sub-row span.active { color: rgba(20,40,20,.8); }
+
+  .btn-grid { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
+  .btn-row { display: flex; gap: 10px; justify-content: center; }
+
+  .btn { flex: 1; max-width: 110px; height: 46px; border: none; border-radius: 24px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 11.5px; letter-spacing: .8px; cursor: pointer; user-select: none; transition: transform .08s, box-shadow .08s; }
+  .btn:active { transform: scale(.95) translateY(1px); }
+  .btn-white { background: linear-gradient(180deg, #f0f2f5, #dde1e6); color: #3a3f4a; box-shadow: 0 3px 8px rgba(0,0,0,.15), inset 0 1px 0 rgba(255,255,255,.8); }
+  .btn-white:active { box-shadow: 0 1px 3px rgba(0,0,0,.15), inset 0 1px 0 rgba(255,255,255,.6); }
+  .btn-teal { background: linear-gradient(180deg, #7ecbc2, #5fb3aa); color: #fff; box-shadow: 0 3px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.25); text-shadow: 0 1px 2px rgba(0,0,0,.2); }
+  .btn-teal:active { box-shadow: 0 1px 3px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.15); }
+
+  .speaker-row { display: flex; justify-content: flex-end; align-items: center; margin-top: 10px; gap: 8px; }
+  .mute-toggle { display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 6px 12px; border-radius: 16px; background: rgba(0,0,0,.06); border: none; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; color: #555; transition: background .2s; }
+  .mute-toggle:active { background: rgba(0,0,0,.12); }
+  .mute-toggle .icon { font-size: 16px; }
+  .mute-toggle.muted .icon::after { content: '🔇'; }
+  .mute-toggle:not(.muted) .icon::after { content: '🔔'; }
+
+  .btn.holding { background: linear-gradient(180deg, #e2e5ea, #c8cdd4) !important; }
+
+  .info-bar { text-align: center; margin-top: 14px; font-size: 10px; font-weight: 600; color: rgba(255,255,255,.25); letter-spacing: 1.5px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<div class="install-banner" id="installBanner">
+  <div class="ib-text"><strong>Install Timer App</strong><br>Use fullscreen — no address bar</div>
+  <button class="ib-dismiss" id="installDismiss">Later</button>
+  <button class="ib-install" id="installBtn">Install</button>
+</div>
+
+<div class="device-wrap">
+  <div class="device">
+    <div class="lcd-frame">
+      <div class="lcd" id="lcd">
+        <div class="mode-row">
+          <span id="ind-timer">TIMER</span>
+          <span id="ind-clock">CLOCK</span>
+          <span id="ind-alarm">ALARM</span>
+          <span class="alarm-icon" id="alarm-bell">🔔</span>
+        </div>
+        <div class="time-display" id="timeDisplay">
+          <span id="digit-h">12</span><span class="colon" id="colon1">:</span><span id="digit-m">00</span><span class="seconds" id="digit-s">00</span><span class="ampm" id="ampm">AM</span>
+        </div>
+        <div class="sub-row">
+          <span id="ind-countup">COUNT-UP</span>
+          <span id="ind-memory">MEMORY</span>
+        </div>
+      </div>
+    </div>
+    <div class="btn-grid">
+      <div class="btn-row">
+        <button class="btn btn-white" id="btnH">HOUR</button>
+        <button class="btn btn-white" id="btnM">MIN</button>
+        <button class="btn btn-white" id="btnS">SEC</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-teal" id="btnMode">MODE</button>
+        <button class="btn btn-teal" id="btnClear">CLEAR</button>
+        <button class="btn btn-teal" id="btnStart">START</button>
+      </div>
+    </div>
+    <div class="speaker-row">
+      <button class="mute-toggle" id="muteBtn"><span class="icon"></span><span id="muteLabel">LOUD</span></button>
+    </div>
+  </div>
+  <div class="info-bar">KTKUDY HX106 · Digital Timer</div>
+</div>
+
+<script>
+// ── PWA Setup ──────────────────────────────────────────────
+(function setupPWA() {
+  const manifest = {
+    name: "KTKUDY Digital Timer",
+    short_name: "Timer",
+    description: "Clock, Countdown, Count-up & Alarm",
+    start_url: location.href,
+    display: "standalone",
+    orientation: "portrait",
+    background_color: "#1a1d23",
+    theme_color: "#1a1d23",
+    icons: [{
+      src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%231a1d23'/%3E%3Crect x='56' y='80' width='400' height='200' rx='24' fill='%23a3bca6'/%3E%3Ctext x='256' y='210' font-family='monospace' font-weight='900' font-size='120' fill='%231a2e1a' text-anchor='middle'%3E8:04%3C/text%3E%3Ccircle cx='156' cy='350' r='36' fill='%235fb3aa'/%3E%3Ccircle cx='256' cy='350' r='36' fill='%235fb3aa'/%3E%3Ccircle cx='356' cy='350' r='36' fill='%235fb3aa'/%3E%3Ccircle cx='156' cy='430' r='36' fill='%23dde1e6'/%3E%3Ccircle cx='256' cy='430' r='36' fill='%23dde1e6'/%3E%3Ccircle cx='356' cy='430' r='36' fill='%23dde1e6'/%3E%3C/svg%3E",
+      sizes: "512x512", type: "image/svg+xml", purpose: "any maskable"
+    }]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  const link = document.createElement('link');
+  link.rel = 'manifest'; link.href = URL.createObjectURL(blob);
+  document.head.appendChild(link);
+
+  if ('serviceWorker' in navigator) {
+    const sw = `
+      const C='timer-v1';
+      self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll([self.registration.scope])));self.skipWaiting();});
+      self.addEventListener('activate',e=>{e.waitUntil(self.clients.claim());});
+      self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match(self.registration.scope))));});
+    `;
+    navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'})),{scope:location.pathname}).catch(()=>{});
+  }
+
+  let deferredPrompt = null;
+  const banner = document.getElementById('installBanner');
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; banner.classList.add('show'); });
+  document.getElementById('installBtn').addEventListener('click', async () => { if(!deferredPrompt)return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; banner.classList.remove('show'); });
+  document.getElementById('installDismiss').addEventListener('click', () => banner.classList.remove('show'));
+  window.addEventListener('appinstalled', () => { banner.classList.remove('show'); deferredPrompt=null; });
+})();
+
+// ── Timer Logic ────────────────────────────────────────────
+(() => {
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let audioCtx;
+  function ensureAudio(){if(!audioCtx)audioCtx=new AudioCtx();}
+  function beep(f=2400,d=120){if(state.muted)return;ensureAudio();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='square';o.frequency.value=f;g.gain.value=.08;o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+d/1000);}
+  function alarmBeep(){if(state.muted)return;beep(2800,100);setTimeout(()=>beep(3200,100),150);setTimeout(()=>beep(2800,100),300);}
+
+  const state={mode:'clock',muted:false,clockH:new Date().getHours()%12||12,clockM:new Date().getMinutes(),clockS:new Date().getSeconds(),clockAM:new Date().getHours()<12,clockRunning:true,clockEditing:false,timerH:0,timerM:0,timerS:0,timerRunning:false,timerDirection:null,memoryH:0,memoryM:0,memoryS:0,hasMemory:false,alarmH:12,alarmM:0,alarmS:0,alarmAM:true,alarmActive:false,alerting:false,alertInterval:null,colonVisible:true};
+
+  const $=id=>document.getElementById(id);
+  const lcd=$('lcd'),digitH=$('digit-h'),digitM=$('digit-m'),digitS=$('digit-s'),ampmEl=$('ampm'),colon1=$('colon1');
+  const indTimer=$('ind-timer'),indClock=$('ind-clock'),indAlarm=$('ind-alarm'),indCountup=$('ind-countup'),indMemory=$('ind-memory'),alarmBell=$('alarm-bell'),muteBtn=$('muteBtn'),muteLabel=$('muteLabel');
+  const pad2=n=>String(n).padStart(2,'0');
+
+  function render(){
+    indTimer.className=state.mode==='timer'?'active':'';
+    indClock.className=state.mode==='clock'?'active':'';
+    indAlarm.className=state.mode==='alarm'?'active':'';
+    alarmBell.className='alarm-icon'+(state.alarmActive?' active':'');
+    indCountup.className=(state.mode==='timer'&&state.timerDirection==='up')?'active':'';
+    indMemory.className=(state.hasMemory&&state.mode==='timer')?'active':'';
+    ampmEl.style.display=(state.mode==='clock'||state.mode==='alarm')?'':'none';
+
+    if(state.mode==='clock'){
+      digitH.textContent=state.clockH;digitM.textContent=pad2(state.clockM);digitS.textContent=pad2(state.clockS);
+      ampmEl.textContent=state.clockAM?'AM':'PM';
+      colon1.className='colon'+(!state.clockEditing&&state.clockRunning&&!state.colonVisible?' colon-hidden':'');
+    }else if(state.mode==='timer'){
+      digitH.textContent=state.timerH;digitM.textContent=pad2(state.timerM);digitS.textContent=pad2(state.timerS);
+      colon1.className='colon';
+    }else{
+      digitH.textContent=state.alarmH;digitM.textContent=pad2(state.alarmM);digitS.textContent=pad2(state.alarmS);
+      ampmEl.textContent=state.alarmAM?'AM':'PM';
+      colon1.className='colon'+(state.alarmActive&&!state.colonVisible?' colon-hidden':'');
+    }
+    lcd.classList.toggle('lcd-flash',state.alerting);
+    muteBtn.classList.toggle('muted',state.muted);
+    muteLabel.textContent=state.muted?'MUTE':'LOUD';
+  }
+
+  setInterval(()=>{
+    if(state.clockRunning&&!state.clockEditing){
+      const n=new Date();state.clockH=n.getHours()%12||12;state.clockM=n.getMinutes();state.clockS=n.getSeconds();state.clockAM=n.getHours()<12;
+      if(state.alarmActive&&!state.alerting){const h24=n.getHours(),a24=state.alarmAM?(state.alarmH%12):(state.alarmH%12+12);if(h24===a24&&state.alarmM===n.getMinutes()&&state.alarmS===n.getSeconds())startAlert();}
+    }
+    state.colonVisible=!state.colonVisible;render();
+  },500);
+
+  setInterval(()=>{
+    if(!state.timerRunning)return;
+    if(state.timerDirection==='up'){state.timerS++;if(state.timerS>=60){state.timerS=0;state.timerM++;}if(state.timerM>=60){state.timerM=0;state.timerH++;}if(state.timerH>=24){state.timerH=0;state.timerM=0;state.timerS=0;}}
+    else if(state.timerDirection==='down'){let t=state.timerH*3600+state.timerM*60+state.timerS;t--;if(t<=0){state.timerH=0;state.timerM=0;state.timerS=0;state.timerRunning=false;state.timerDirection=null;startAlert();return;}state.timerH=Math.floor(t/3600);state.timerM=Math.floor((t%3600)/60);state.timerS=t%60;}
+    render();
+  },1000);
+
+  function startAlert(){state.alerting=true;let c=0;state.alertInterval=setInterval(()=>{alarmBeep();c++;if(c>30)stopAlert();},2000);alarmBeep();if(navigator.vibrate)navigator.vibrate([200,100,200,100,200]);render();}
+  function stopAlert(){state.alerting=false;if(state.alertInterval){clearInterval(state.alertInterval);state.alertInterval=null;}if(navigator.vibrate)navigator.vibrate(0);render();}
+
+  $('btnMode').addEventListener('click',()=>{beep();if(state.alerting){stopAlert();return;}const m=['clock','timer','alarm'],i=m.indexOf(state.mode);state.mode=m[(i+1)%3];state.clockEditing=false;render();});
+
+  $('btnClear').addEventListener('click',()=>{beep();if(state.alerting){stopAlert();return;}if(state.mode==='timer'&&!state.timerRunning){const t=state.timerH*3600+state.timerM*60+state.timerS;if(t===0&&state.hasMemory){state.timerH=state.memoryH;state.timerM=state.memoryM;state.timerS=state.memoryS;}else{state.timerH=0;state.timerM=0;state.timerS=0;state.timerDirection=null;}}render();});
+
+  $('btnStart').addEventListener('click',()=>{beep();if(state.alerting){stopAlert();return;}
+    if(state.mode==='timer'){if(state.timerRunning){state.timerRunning=false;}else{const t=state.timerH*3600+state.timerM*60+state.timerS;if(t===0){state.timerDirection='up';}else{state.timerDirection='down';state.memoryH=state.timerH;state.memoryM=state.timerM;state.memoryS=state.timerS;state.hasMemory=true;}state.timerRunning=true;}}
+    else if(state.mode==='clock'){state.clockEditing=!state.clockEditing;}
+    else if(state.mode==='alarm'){state.alarmActive=!state.alarmActive;}
+    render();});
+
+  function setupHMS(btnId,field){
+    const btn=$(btnId);let ps=0,ht=null,hi=null;
+    function inc(){beep(1800,40);if(state.alerting){stopAlert();return;}
+      if(state.mode==='timer'&&!state.timerRunning){if(field==='h')state.timerH=(state.timerH+1)%24;else if(field==='m')state.timerM=(state.timerM+1)%60;else state.timerS=(state.timerS+1)%60;state.timerDirection=null;}
+      else if(state.mode==='clock'&&state.clockEditing){if(field==='h'){state.clockH++;if(state.clockH>12)state.clockH=1;if(state.clockH===12)state.clockAM=!state.clockAM;}else if(field==='m')state.clockM=(state.clockM+1)%60;else state.clockS=(state.clockS+1)%60;}
+      else if(state.mode==='alarm'){if(field==='h'){state.alarmH++;if(state.alarmH>12)state.alarmH=1;if(state.alarmH===12)state.alarmAM=!state.alarmAM;}else if(field==='m')state.alarmM=(state.alarmM+1)%60;else state.alarmS=(state.alarmS+1)%60;}
+      render();}
+    function sd(){ps=Date.now();ht=setTimeout(()=>{btn.classList.add('holding');hi=setInterval(inc,120);},500);}
+    function eu(){btn.classList.remove('holding');if(ht){clearTimeout(ht);ht=null;}if(hi){clearInterval(hi);hi=null;}if(Date.now()-ps<500)inc();}
+    btn.addEventListener('mousedown',sd);btn.addEventListener('mouseup',eu);btn.addEventListener('mouseleave',eu);
+    btn.addEventListener('touchstart',e=>{e.preventDefault();sd();},{passive:false});btn.addEventListener('touchend',e=>{e.preventDefault();eu();});btn.addEventListener('touchcancel',eu);
+  }
+  setupHMS('btnH','h');setupHMS('btnM','m');setupHMS('btnS','s');
+
+  muteBtn.addEventListener('click',()=>{state.muted=!state.muted;if(!state.muted)beep();render();});
+  render();
+})();
+</script>
+</body>
+</html>
